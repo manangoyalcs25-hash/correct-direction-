@@ -1,0 +1,1886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>ShopInventory — Dashboard</title>
+<link rel="manifest" href="manifest.json?v=2026-05-20">
+<meta name="theme-color" content="#6c63ff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Shop Inventory">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Outfit:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --void:#04040a;
+  --deep:#0a0a14;
+  --surface:#0f0f1e;
+  --panel:#141428;
+  --rim:#1e1e38;
+  --neon:#00ff88;
+  --neon2:#00d4ff;
+  --fire:#ff4444;
+  --gold:#ffd700;
+  --ink:#e8e8f0;
+  --muted:#5a5a7a;
+  --faint:#2a2a44;
+  --mono:'Space Mono',monospace;
+  --sans:'Outfit',sans-serif;
+}
+
+html,body{height:100%;background:var(--void);color:var(--ink);font-family:var(--sans);overflow:hidden}
+
+/* LAYOUT */
+.app{display:grid;grid-template-columns:72px 1fr;height:100vh}
+
+/* ─── ICON RAIL ─── */
+.rail{background:var(--deep);display:flex;flex-direction:column;align-items:center;padding:24px 0;gap:4px;border-right:1px solid var(--faint);position:relative;z-index:10}
+.rail-logo{width:40px;height:40px;background:var(--neon);border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;position:relative;cursor:pointer;flex-shrink:0}
+.rail-logo::after{content:'';position:absolute;inset:-4px;border-radius:14px;border:1px solid rgba(0,255,136,0.3);animation:pulse-ring 2s ease-in-out infinite}
+@keyframes pulse-ring{0%,100%{opacity:0.3;transform:scale(1)}50%{opacity:0.8;transform:scale(1.05)}}
+.rail-logo svg{width:22px;height:22px;fill:var(--void)}
+
+.nav-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:all 0.2s;flex-shrink:0}
+.nav-icon:hover{background:var(--faint)}
+.nav-icon.active{background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3)}
+.nav-icon svg{width:20px;height:20px;stroke:var(--muted);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.nav-icon.active svg{stroke:var(--neon)}
+.nav-icon .tooltip{position:absolute;left:58px;background:var(--panel);border:1px solid var(--rim);color:var(--ink);font-size:11px;font-family:var(--mono);padding:5px 10px;border-radius:6px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity 0.2s;letter-spacing:0.05em}
+.nav-icon:hover .tooltip{opacity:1}
+
+.rail-sep{width:36px;height:1px;background:var(--faint);margin:8px 0}
+.rail-bottom{margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:8px}
+.avatar-sm{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--neon),var(--neon2));display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:700;color:var(--void);cursor:pointer}
+
+/* ─── MAIN ─── */
+.main{display:grid;grid-template-rows:auto 1fr;overflow:hidden}
+
+/* TOPBAR */
+.topbar{background:var(--deep);border-bottom:1px solid var(--faint);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:58px;gap:20px}
+.breadcrumb{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.breadcrumb span{color:var(--neon)}
+.breadcrumb::before{content:'~/';color:var(--faint);margin-right:2px}
+
+.topbar-center{flex:1;max-width:340px}
+.search-wrap{position:relative}
+.search-wrap input{width:100%;background:var(--surface);border:1px solid var(--faint);border-radius:8px;padding:8px 14px 8px 36px;font-family:var(--mono);font-size:12px;color:var(--ink);outline:none;transition:border-color 0.2s}
+.search-wrap input::placeholder{color:var(--muted)}
+.search-wrap input:focus{border-color:rgba(0,255,136,0.4)}
+.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:16px;height:16px;stroke:var(--muted);fill:none;stroke-width:1.5}
+.search-kbd{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:9px;color:var(--faint);background:var(--rim);padding:2px 6px;border-radius:4px}
+
+.topbar-right{display:flex;align-items:center;gap:16px}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--neon);box-shadow:0 0 8px var(--neon);animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.4}}
+.status-text{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.08em}
+.date-tag{font-family:var(--mono);font-size:10px;color:var(--muted);background:var(--surface);border:1px solid var(--faint);padding:5px 10px;border-radius:6px;letter-spacing:0.05em}
+
+/* ─── CONTENT ─── */
+.content{display:grid;grid-template-columns:1fr 340px;overflow:hidden}
+
+/* LEFT PANEL */
+.left-panel{overflow-y:auto;padding:28px 28px 28px 32px;display:flex;flex-direction:column;gap:24px;scrollbar-width:thin;scrollbar-color:var(--faint) transparent}
+
+/* SECTION LABEL */
+.sec-label{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.15em;text-transform:uppercase;display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--faint)}
+
+/* METRICS */
+.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.metric{background:var(--surface);border:1px solid var(--faint);border-radius:14px;padding:18px 16px;position:relative;overflow:hidden;cursor:pointer;transition:border-color 0.3s,transform 0.2s}
+.metric:hover{transform:translateY(-2px)}
+.metric:nth-child(1):hover{border-color:rgba(0,255,136,0.4)}
+.metric:nth-child(2):hover{border-color:rgba(255,68,68,0.4)}
+.metric:nth-child(3):hover{border-color:rgba(255,215,0,0.4)}
+.metric:nth-child(4):hover{border-color:rgba(0,212,255,0.4)}
+
+.metric-tag{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:0.12em;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.metric-tag::before{content:'';width:6px;height:6px;border-radius:1px}
+.m1 .metric-tag::before{background:var(--neon)}
+.m2 .metric-tag::before{background:var(--fire)}
+.m3 .metric-tag::before{background:var(--gold)}
+.m4 .metric-tag::before{background:var(--neon2)}
+
+.metric-val{font-family:var(--mono);font-size:36px;font-weight:700;line-height:1;letter-spacing:-0.02em}
+.m1 .metric-val{color:var(--neon)}
+.m2 .metric-val{color:var(--fire)}
+.m3 .metric-val{color:var(--gold)}
+.m4 .metric-val{color:var(--neon2)}
+
+.metric-sub{font-size:11px;color:var(--muted);margin-top:8px;font-family:var(--sans)}
+.metric-corner{position:absolute;bottom:-16px;right:-10px;font-family:var(--mono);font-size:56px;font-weight:700;opacity:0.04;line-height:1;pointer-events:none}
+
+/* CHART AREA */
+.chart-card{background:var(--surface);border:1px solid var(--faint);border-radius:14px;padding:20px}
+.chart-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.chart-title{font-family:var(--mono);font-size:12px;color:var(--ink);letter-spacing:0.05em}
+.chart-tabs{display:flex;gap:4px}
+.tab{font-family:var(--mono);font-size:10px;color:var(--muted);padding:4px 10px;border-radius:6px;cursor:pointer;border:1px solid transparent;letter-spacing:0.05em;transition:all 0.2s}
+.tab.active{color:var(--neon);border-color:rgba(0,255,136,0.3);background:rgba(0,255,136,0.06)}
+.chart-body{height:140px;display:flex;align-items:flex-end;gap:6px;position:relative;padding-top:20px}
+.chart-body::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(0deg,transparent,transparent calc(25% - 0.5px),var(--faint) calc(25% - 0.5px),var(--faint) 25%);opacity:0.4;pointer-events:none}
+.bar{flex:1;background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.2);border-radius:4px 4px 0 0;position:relative;cursor:pointer;transition:background 0.2s}
+.bar:hover{background:rgba(0,255,136,0.3)}
+.bar.highlight{background:rgba(0,255,136,0.35);border-color:var(--neon)}
+.chart-labels{display:flex;gap:6px;margin-top:8px}
+.chart-lbl{flex:1;text-align:center;font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:0.05em}
+
+/* INVENTORY TABLE */
+.table-card{background:var(--surface);border:1px solid var(--faint);border-radius:14px;overflow:hidden}
+.table-header{padding:16px 20px;border-bottom:1px solid var(--faint);display:flex;justify-content:space-between;align-items:center}
+.table-title{font-family:var(--mono);font-size:12px;color:var(--ink);letter-spacing:0.05em}
+.view-all{font-family:var(--mono);font-size:10px;color:var(--neon);letter-spacing:0.08em;cursor:pointer;display:flex;align-items:center;gap:4px}
+
+.empty-table{padding:48px 20px;text-align:center}
+.empty-glyph{font-family:var(--mono);font-size:48px;color:var(--faint);margin-bottom:16px;line-height:1}
+.empty-msg{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:0.05em;margin-bottom:6px}
+.empty-sub{font-size:12px;color:var(--faint)}
+.add-btn{display:inline-flex;align-items:center;gap:8px;margin-top:18px;padding:10px 22px;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);color:var(--neon);border-radius:8px;font-family:var(--mono);font-size:11px;letter-spacing:0.08em;cursor:pointer;transition:all 0.2s}
+.add-btn:hover{background:rgba(0,255,136,0.2)}
+
+/* QUICK ACTIONS */
+.qa-card{background:var(--surface);border:1px solid var(--faint);border-radius:14px;padding:16px 20px}
+.qa-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.qa-btn{padding:12px 10px;border:1px dashed var(--faint);border-radius:10px;font-family:var(--mono);font-size:10px;color:var(--muted);cursor:pointer;background:none;text-align:left;display:flex;align-items:center;gap:8px;letter-spacing:0.05em;transition:all 0.2s}
+.qa-btn:hover{border-color:rgba(0,255,136,0.3);color:var(--neon);background:rgba(0,255,136,0.04)}
+.qa-icon{width:28px;height:28px;border-radius:6px;background:var(--faint);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px}
+
+/* ─── RIGHT PANEL ─── */
+.right-panel{background:var(--deep);border-left:1px solid var(--faint);overflow-y:auto;padding:28px 20px;display:flex;flex-direction:column;gap:20px;scrollbar-width:thin;scrollbar-color:var(--faint) transparent}
+
+.profile-block{background:var(--surface);border:1px solid var(--faint);border-radius:14px;padding:18px;display:flex;align-items:center;gap:14px}
+.profile-avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--neon),var(--neon2));display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:18px;font-weight:700;color:var(--void);flex-shrink:0;position:relative}
+.profile-avatar::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:1.5px solid rgba(0,255,136,0.4);animation:pulse-ring 3s ease-in-out infinite}
+.profile-name{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink);letter-spacing:0.03em}
+.profile-role{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.08em;margin-top:3px}
+.profile-id{font-family:var(--mono);font-size:9px;color:var(--faint);margin-top:4px;letter-spacing:0.08em}
+
+/* HEALTH GAUGES */
+.gauges{display:flex;flex-direction:column;gap:12px}
+.gauge-item{}
+.gauge-meta{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.gauge-name{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.08em}
+.gauge-pct{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--neon)}
+.gauge-track{height:4px;background:var(--faint);border-radius:2px;overflow:hidden}
+.gauge-fill{height:100%;border-radius:2px;background:var(--neon);transition:width 1s ease;position:relative}
+.gauge-fill::after{content:'';position:absolute;right:0;top:50%;transform:translateY(-50%);width:8px;height:8px;border-radius:50%;background:var(--neon);box-shadow:0 0 6px var(--neon)}
+.gauge-fill.warn{background:var(--gold)}
+.gauge-fill.warn::after{background:var(--gold);box-shadow:0 0 6px var(--gold)}
+.gauge-fill.crit{background:var(--fire)}
+.gauge-fill.crit::after{background:var(--fire);box-shadow:0 0 6px var(--fire)}
+
+/* TXN FEED */
+.txn-feed{display:flex;flex-direction:column;gap:1px}
+.txn-item{padding:12px 0;border-bottom:1px solid var(--faint);display:flex;align-items:center;gap:12px}
+.txn-item:last-child{border-bottom:none}
+.txn-type{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--mono);font-size:14px;font-weight:700}
+.txn-type.sale{background:rgba(0,255,136,0.1);color:var(--neon)}
+.txn-type.purch{background:rgba(255,68,68,0.1);color:var(--fire)}
+.txn-info{flex:1;min-width:0}
+.txn-name{font-size:12px;color:var(--ink);font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.txn-date{font-family:var(--mono);font-size:9px;color:var(--faint);margin-top:3px;letter-spacing:0.05em}
+.txn-amt{font-family:var(--mono);font-size:13px;font-weight:700;text-align:right}
+.txn-amt.pos{color:var(--neon)}
+.txn-amt.neg{color:var(--fire)}
+
+.empty-txn{padding:32px 0;text-align:center}
+.empty-txn-glyph{font-family:var(--mono);font-size:32px;color:var(--faint);margin-bottom:10px}
+.empty-txn-msg{font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:0.08em}
+
+/* LOG SECTION */
+.log-block{background:var(--surface);border:1px solid var(--faint);border-radius:14px;padding:16px}
+.log-header{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.12em;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.log-header::before{content:'';width:6px;height:6px;border-radius:1px;background:var(--neon);display:block}
+.log-line{font-family:var(--mono);font-size:10px;line-height:1.8;color:var(--faint)}
+.log-line .ts{color:var(--muted)}
+.log-line .ev{color:var(--neon2)}
+.log-line .ok{color:var(--neon)}
+.log-cursor{display:inline-block;width:6px;height:12px;background:var(--neon);animation:cursor-blink 1s step-end infinite;vertical-align:middle;margin-left:2px;border-radius:1px}
+@keyframes cursor-blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:var(--faint);border-radius:2px}
+
+/* ═══════════════════════════════════════════════════════════════
+   LAPTOP / MEDIUM SCREENS  (≤1200px)
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width:1200px){
+  .content{grid-template-columns:1fr 280px}
+  .metric-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .metric-val{font-size:28px}
+  .right-panel{padding:20px 14px}
+}
+
+@media (max-width:960px){
+  /* Collapse right panel into a drawer trigger */
+  .content{grid-template-columns:1fr}
+  .right-panel{display:none}
+  .topbar{padding:0 18px;gap:12px}
+  .topbar-center{max-width:260px}
+  .date-tag{display:none}
+  .left-panel{padding:18px 18px 80px}
+
+  /* Billing: stack at tablet too */
+  #billing > div[style*="display:flex"]{
+    flex-direction:column!important;
+    gap:12px!important;
+  }
+  #billingCartSection{
+    width:100%!important;
+    min-width:unset!important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE  (≤640px)
+   Rail collapses → bottom tab bar
+   Topbar simplifies
+   Content goes full width
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width:640px){
+  html,body{overflow:auto}
+
+  /* App grid: single column, rail moves to bottom */
+  .app{
+    display:flex;
+    flex-direction:column;
+    min-height:100vh;
+    min-height:100dvh;
+  }
+
+  /* ── MOBILE BOTTOM TAB BAR ── */
+  .rail{
+    order:3;                      /* push to bottom */
+    width:100%;
+    height:60px;
+    flex-direction:row;
+    align-items:center;
+    justify-content:space-around;
+    padding:0 6px;
+    border-right:none;
+    border-top:1px solid var(--faint);
+    position:fixed;
+    bottom:0;left:0;right:0;
+    z-index:100;
+    gap:0;
+  }
+
+  /* Hide logo and separators in bottom bar */
+  .rail-logo{display:none}
+  .rail-sep{display:none}
+  .rail-bottom{
+    flex-direction:row;
+    margin-top:0;
+    gap:0;
+    flex:1;
+    justify-content:space-around;
+    display:flex;
+  }
+
+  /* Nav icons become bottom-bar tabs */
+  .nav-icon{
+    width:48px;height:48px;
+    border-radius:10px;
+    flex-direction:column;
+    gap:2px;
+    flex:1;
+    max-width:56px;
+  }
+  .nav-icon svg{width:18px;height:18px}
+
+  /* Tooltips off on mobile */
+  .nav-icon .tooltip{display:none!important}
+
+  /* Small label under icon */
+  .nav-icon::after{
+    content:attr(title);
+    font-size:8px;
+    font-family:var(--mono);
+    color:var(--muted);
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    display:block;
+  }
+  .nav-icon.active::after{color:var(--neon)}
+
+  /* ── MAIN AREA ── */
+  .main{
+    order:1;
+    display:flex;
+    flex-direction:column;
+    flex:1;
+    padding-bottom:60px;  /* space for bottom bar */
+    overflow:hidden;
+  }
+
+  /* ── TOPBAR ── */
+  .topbar{
+    height:52px;
+    padding:0 12px;
+    gap:8px;
+  }
+  .breadcrumb{display:none}
+  #mobileLogo{display:block!important}
+  .topbar-center{max-width:unset;flex:1}
+  .search-kbd{display:none}
+  .status-text{display:none}
+  .status-dot{width:6px;height:6px}
+  .date-tag{display:none}
+
+  /* ── CONTENT AREA ── */
+  .content{
+    grid-template-columns:1fr;
+    overflow:auto;
+    height:calc(100dvh - 52px - 60px);
+  }
+  .right-panel{display:none}
+  .left-panel{
+    padding:14px 12px 16px;
+    gap:16px;
+    overflow-y:auto;
+  }
+
+  /* ── METRICS ── */
+  .metric-grid{grid-template-columns:1fr 1fr;gap:8px}
+  .metric{padding:14px 12px;border-radius:12px}
+  .metric-val{font-size:24px}
+  .metric-sub{font-size:10px}
+  .metric-corner{font-size:40px}
+  .metric-tag{font-size:8px;margin-bottom:10px}
+
+  /* ── CHART ── */
+  .chart-card{padding:14px}
+  .chart-body{height:110px}
+  .chart-title{font-size:10px}
+  .tab{font-size:9px;padding:3px 8px}
+
+  /* ── TABLE ── */
+  .table-card{border-radius:12px}
+  .table-header{padding:12px 14px}
+  .table-title{font-size:10px}
+  .view-all{font-size:9px}
+
+  /* ── QUICK ACTIONS ── */
+  .qa-card{padding:12px 14px}
+  .qa-grid{grid-template-columns:1fr 1fr;gap:6px}
+  .qa-btn{font-size:9px;padding:10px 8px}
+  .qa-icon{width:24px;height:24px;font-size:11px}
+
+  /* ── HIDDEN PAGES ── */
+  .hidden-page{
+    padding-bottom:60px; /* clear bottom tab bar */
+    overflow:hidden;
+  }
+  /* Inner scrollable zones inside hidden pages */
+  #productsList,
+  #invoicesList,
+  #colorBookContent,
+  #lowstockList,
+  #billingFormSection,
+  #billingCartSection{
+    height:auto!important;
+  }
+  /* The full scrolling div inside billing, lowstock etc */
+  .hidden-page > div[style*="height:calc"]{
+    height:auto!important;
+    flex:1;
+    overflow-y:auto;
+  }
+  /* Billing: stack form + cart */
+  #billing > div[style*="display:flex"]{
+    flex-direction:column!important;
+    padding:12px!important;
+    gap:10px!important;
+    overflow-y:auto!important;
+    height:calc(100% - 56px)!important;
+  }
+  #billingCartSection{
+    width:100%!important;
+    min-width:unset!important;
+  }
+
+  /* hp-topbar search inputs */
+  #productSearch,
+  #invoiceSearch{
+    width:140px!important;
+    font-size:10px!important;
+  }
+  /* hp-topbar close button bigger tap target */
+  .hp-btn-ghost[onclick="hideHiddenPage()"]{
+    padding:10px 14px!important;
+    font-size:15px!important;
+  }
+
+  /* ── MODALS ── */
+  .si-modal{padding:8px;align-items:flex-end}
+  .si-modal-box{
+    border-radius:18px 18px 0 0;
+    max-height:88vh;
+    padding:18px 14px;
+  }
+  .modal{padding:8px;align-items:flex-end}
+  .modal-content{
+    border-radius:18px 18px 0 0;
+    max-height:88vh;
+    padding:18px 14px;
+  }
+
+  /* ── NOTIFICATIONS ── */
+  .notification{
+    left:12px;right:12px;bottom:72px;
+    max-width:unset;
+    font-size:10px;
+    padding:10px 14px;
+  }
+
+  /* Sec labels */
+  .sec-label{font-size:9px}
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   EXTRA SMALL (≤380px)
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width:380px){
+  .metric-val{font-size:20px}
+  .metric-grid{gap:6px}
+  .nav-icon{max-width:48px}
+  .qa-grid{grid-template-columns:1fr 1fr;gap:4px}
+  .qa-btn{font-size:8px;padding:8px 6px}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ICON RAIL -->
+  <div class="rail">
+    <div class="rail-logo" title="ShopInventory">
+      <svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2zM4 5h16a1 1 0 000-2H4a1 1 0 000 2z"/></svg>
+    </div>
+
+    <div class="nav-icon active" data-page="dashboard" onclick="app&&app.changePage('dashboard')" title="Dashboard">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <div class="tooltip">Dashboard</div>
+    </div>
+    <div class="nav-icon" data-page="billing" onclick="app&&app.changePage('billing')" title="Billing">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <div class="tooltip">Billing</div>
+    </div>
+    <div class="rail-sep"></div>
+    <!-- OLD INVENTORY -->
+    <div class="nav-icon" data-page="products" onclick="app&&app.changePage('products')" title="Old Inventory">
+      <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+      <div class="tooltip">Old Inventory</div>
+    </div>
+    <!-- NEW INVENTORY (Purchase Orders) -->
+    <div class="nav-icon" data-page="newinventory" onclick="app&&app.changePage('newinventory')" title="New Inventory">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <div class="tooltip">New Inventory</div>
+    </div>
+    <!-- PRODUCT DESIGN CHART -->
+    <div class="nav-icon" data-page="designchart" onclick="app&&app.changePage('designchart')" title="Design Chart">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="21.17" y1="8" x2="12" y2="8"/><line x1="3.95" y1="6.06" x2="8.54" y2="14"/><line x1="10.88" y1="21.94" x2="15.46" y2="14"/></svg>
+      <div class="tooltip">Design Chart</div>
+    </div>
+    <div class="nav-icon" data-page="colorbook" onclick="app&&app.changePage('colorbook')" title="Colour Book">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <div class="tooltip">Colour Book</div>
+    </div>
+    <div class="nav-icon" data-page="suppliers" onclick="app&&app.changePage('suppliers')" title="Suppliers">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <div class="tooltip">Suppliers</div>
+    </div>
+    <div class="nav-icon" data-page="bookings" onclick="app&&app.changePage('bookings')" title="Advance Bookings">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <div class="tooltip">Bookings</div>
+    </div>
+
+    <!-- NEW: Customer Ledger -->
+    <div class="nav-icon" data-page="customerledger" onclick="app&&app.changePage('customerledger')" title="Customer Ledger">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      <div class="tooltip">Customers</div>
+    </div>
+
+    <!-- NEW: Sales Analytics -->
+    <div class="nav-icon" onclick="openAnalytics()" title="Sales Analytics" style="cursor:pointer;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <div class="tooltip">Analytics</div>
+    </div>
+
+    <!-- NEW: Backup -->
+    <div class="nav-icon" onclick="openBackupModal()" title="Backup & Restore" style="cursor:pointer;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x1="12" y2="3"/></svg>
+      <div class="tooltip">Backup</div>
+    </div>
+
+    <!-- NEW: Meter Billing (Fabric by Meter) -->
+    <div class="nav-icon" onclick="openMeterBilling()" title="Meter Billing - Fabric Sales" style="cursor:pointer;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z"/><path d="m14.5 12.5 2-2"/><path d="m11.5 9.5 2-2"/><path d="m8.5 6.5 2-2"/><path d="m17.5 15.5 2-2"/></svg>
+      <div class="tooltip">Meter Billing</div>
+    </div>
+
+    <div class="rail-bottom">
+      <div class="rail-sep"></div>
+      <div class="nav-icon" id="userEmailChip" onclick="showMobileAccountMenu()" title="Account">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 10-16 0"/></svg>
+        <div class="tooltip">Profile</div>
+      </div>
+      <div class="nav-icon" data-page="settings" onclick="app&&app.changePage('settings')" title="Settings">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        <div class="tooltip">Settings</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="breadcrumb">inventory<span>/</span>dashboard</div>
+      <div id="mobileLogo" style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--neon);letter-spacing:0.06em;display:none;">SHOP<span style="color:var(--neon2)">INV</span></div>
+      <div class="topbar-center">
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="search products, invoices…">
+          <span class="search-kbd">⌘K</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="status-dot"></div>
+        <div class="status-text">LIVE&nbsp;&nbsp;·&nbsp;&nbsp;SYNC ON</div>
+        <div class="date-tag">THU 01 MAY 2026</div>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+      <!-- LEFT -->
+      <div class="left-panel">
+
+        <div class="sec-label">SYSTEM METRICS</div>
+        <div class="metric-grid" style="grid-template-columns:repeat(6,1fr);">
+          <div class="metric m1" onclick="app&&app.changePage('products')" title="Go to Inventory">
+            <div class="metric-tag">PRODUCTS</div>
+            <div class="metric-val" id="totalProducts">0</div>
+            <div class="metric-sub">No items yet</div>
+            <div class="metric-corner">P</div>
+          </div>
+          <div class="metric m2" onclick="app&&app.changePage('lowstock')" title="Go to Low Stock">
+            <div class="metric-tag">LOW STOCK</div>
+            <div class="metric-val" id="lowStockItems">0</div>
+            <div class="metric-sub">All clear</div>
+            <div class="metric-corner">L</div>
+          </div>
+          <div class="metric m3" onclick="app&&app.changePage('invoices')" title="Go to Invoices">
+            <div class="metric-tag">REVENUE</div>
+            <div class="metric-val" id="totalRevenue">₹0</div>
+            <div class="metric-sub">Total earnings</div>
+            <div class="metric-corner">R</div>
+          </div>
+          <div class="metric m4" onclick="app&&app.changePage('invoices')" title="Go to Invoices">
+            <div class="metric-tag">INVOICES</div>
+            <div class="metric-val" id="totalInvoices">0</div>
+            <div class="metric-sub">Pending</div>
+            <div class="metric-corner">I</div>
+          </div>
+          <div class="metric" onclick="app&&app.openPendingOrdersModal()" title="View Pending Orders"
+            style="cursor:pointer;background:linear-gradient(135deg,rgba(255,165,0,0.08),rgba(255,100,0,0.05));border-color:rgba(255,165,0,0.3);position:relative;">
+            <div class="metric-tag" style="color:orange;">PENDING ORDERS</div>
+            <div class="metric-val" id="pendingOrdersCount" style="color:orange;">0</div>
+            <div class="metric-sub">Tap to track</div>
+            <div class="metric-corner" style="background:rgba(255,165,0,0.1);color:orange;">📦</div>
+            <div id="pendingOrdersBadge" style="display:none;position:absolute;top:10px;right:10px;background:#ff6600;color:white;border-radius:50%;width:20px;height:20px;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;">0</div>
+          </div>
+          <div class="metric" onclick="app&&app.changePage('bookings')" title="Advance Bookings"
+            style="cursor:pointer;background:linear-gradient(135deg,rgba(108,99,255,0.08),rgba(0,212,255,0.05));border-color:rgba(108,99,255,0.3);position:relative;">
+            <div class="metric-tag" style="color:#a78bfa;">ADVANCE BOOKINGS</div>
+            <div class="metric-val" id="advanceBookingsCount" style="color:#a78bfa;">0</div>
+            <div class="metric-sub">Tap to manage</div>
+            <div class="metric-corner" style="color:#a78bfa;">📅</div>
+          </div>
+        </div>
+
+        <div class="sec-label">SALES ACTIVITY</div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">REVENUE_OVERVIEW.log</div>
+            <div class="chart-tabs">
+              <div class="tab active" onclick="app&&app.setChartRange('7D',this)">7D</div>
+              <div class="tab" onclick="app&&app.setChartRange('1M',this)">1M</div>
+              <div class="tab" onclick="app&&app.setChartRange('3M',this)">3M</div>
+              <div class="tab" onclick="app&&app.setChartRange('ALL',this)">ALL</div>
+            </div>
+          </div>
+          <div class="chart-body" id="chartBars">
+            <div class="bar" style="height:0%"></div>
+            <div class="bar" style="height:0%"></div>
+            <div class="bar" style="height:0%"></div>
+            <div class="bar" style="height:0%"></div>
+            <div class="bar highlight" style="height:0%"></div>
+            <div class="bar" style="height:0%"></div>
+            <div class="bar" style="height:0%"></div>
+          </div>
+          <div class="chart-labels">
+            <div class="chart-lbl">MON</div>
+            <div class="chart-lbl">TUE</div>
+            <div class="chart-lbl">WED</div>
+            <div class="chart-lbl">THU</div>
+            <div class="chart-lbl">FRI</div>
+            <div class="chart-lbl">SAT</div>
+            <div class="chart-lbl">SUN</div>
+          </div>
+        </div>
+
+        <div class="sec-label">INVENTORY</div>
+        <div class="table-card">
+          <div class="table-header">
+            <div class="table-title">RECENT_ITEMS.csv</div>
+            <div class="view-all" onclick="app&&app.changePage('products')" data-page="products">VIEW ALL →</div>
+          </div>
+          <div id="recentInventoryGrid" style="padding:8px 12px 12px;">
+          <div class="empty-table">
+            <div class="empty-glyph">[ ]</div>
+            <div class="empty-msg">NO_RECORDS_FOUND</div>
+            <div class="empty-sub">Add your first product to begin tracking</div>
+            <button class="add-btn" id="addProductBtnMain" onclick="app&&app.openProductModal()">+ ADD_PRODUCT</button>
+          </div>
+          </div>
+        </div>
+
+        <div class="qa-card">
+          <div class="sec-label" style="margin-bottom:0">QUICK ACTIONS</div>
+          <div class="qa-grid">
+            <button class="qa-btn" onclick="app&&app.openProductModal()"><div class="qa-icon">+</div>NEW PRODUCT</button>
+            <button class="qa-btn" onclick="app&&app.changePage('billing')"><div class="qa-icon">⊕</div>NEW INVOICE</button>
+            <button class="qa-btn" onclick="app&&app.changePage('products')"><div class="qa-icon">📦</div>OLD INVENTORY</button>
+            <button class="qa-btn" onclick="app&&app.changePage('newinventory')"><div class="qa-icon">🛒</div>NEW INVENTORY</button>
+            <button class="qa-btn" onclick="app&&app.changePage('designchart')"><div class="qa-icon">🎨</div>DESIGN CHART</button>
+            <button class="qa-btn" onclick="app&&app.openCSVImportModal()"><div class="qa-icon">📂</div>CSV IMPORT</button>
+            <button class="qa-btn" onclick="app&&app.changePage('settings')"><div class="qa-icon">⚙</div>SETTINGS</button>
+            <button class="qa-btn" onclick="app&&app.changePage('suppliers')"><div class="qa-icon">🏭</div>SUPPLIERS</button>
+            <button class="qa-btn" onclick="openMeterBilling()"><div class="qa-icon">⚡</div>METER BILLING</button>
+            <button class="qa-btn" onclick="openCustomerLedger()"><div class="qa-icon">👥</div>CUSTOMERS</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT PANEL -->
+      <div class="right-panel">
+        <div class="profile-block">
+          <div class="profile-avatar" id="dashProfileAvatar">?</div>
+          <div>
+            <div class="profile-name" id="dashProfileName">—</div>
+            <div class="profile-role">STORE_ADMIN</div>
+            <div class="profile-id" id="dashProfileId">—</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="sec-label">STOCK HEALTH</div>
+          <div class="gauges">
+            <div class="gauge-item">
+              <div class="gauge-meta"><span class="gauge-name">OVERALL STOCK</span><span class="gauge-pct">100%</span></div>
+              <div class="gauge-track"><div class="gauge-fill" style="width:100%"></div></div>
+            </div>
+            <div class="gauge-item">
+              <div class="gauge-meta"><span class="gauge-name">CRITICAL ITEMS</span><span class="gauge-pct" style="color:var(--neon)">0</span></div>
+              <div class="gauge-track"><div class="gauge-fill" style="width:0%"></div></div>
+            </div>
+            <div class="gauge-item">
+              <div class="gauge-meta"><span class="gauge-name">RESTOCK NEEDED</span><span class="gauge-pct" style="color:var(--neon)">0</span></div>
+              <div class="gauge-track"><div class="gauge-fill" style="width:0%"></div></div>
+            </div>
+            <div class="gauge-item">
+              <div class="gauge-meta"><span class="gauge-name">REVENUE TARGET</span><span class="gauge-pct" style="color:var(--faint)">N/A</span></div>
+              <div class="gauge-track"><div class="gauge-fill" style="width:0%;background:var(--neon2)"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="sec-label">TRANSACTIONS</div>
+          <div class="txn-feed" id="recentTransactionsList">
+            <div class="empty-txn">
+              <div class="empty-txn-glyph">⇄</div>
+              <div class="empty-txn-msg">NO_TRANSACTIONS_YET</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="log-block">
+          <div class="log-header">SYSTEM LOG</div>
+          <div class="log-line"><span class="ts">09:00:01</span> <span class="ev">APP_INIT</span> <span class="ok">OK</span></div>
+          <div class="log-line"><span class="ts">09:00:01</span> <span class="ev">STORAGE_LOAD</span> <span class="ok">OK</span></div>
+          <div class="log-line"><span class="ts">09:00:01</span> <span class="ev">SW_REGISTERED</span> <span class="ok">OK</span></div>
+          <div class="log-line"><span class="ts">09:00:02</span> <span class="ev">READY</span> awaiting input<span class="log-cursor"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+  EMAIL GATE — first-time users
+  ============================================================ -->
+<div id="emailGate" style="display:none;position:fixed;inset:0;z-index:9999;background:radial-gradient(ellipse at 50% 50%,#1a0a3a 0%,#04040a 70%);align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:#0f0f1e;border:1px solid rgba(0,255,136,0.3);border-radius:18px;padding:2.5rem 2rem;max-width:400px;width:100%;text-align:center;box-shadow:0 0 60px rgba(0,255,136,0.15);">
+    <div style="font-size:3rem;margin-bottom:1rem;filter:drop-shadow(0 0 20px #00ff88);">🏪</div>
+    <h1 style="font-family:'Space Mono',monospace;font-size:1.5rem;color:#00ff88;margin-bottom:0.4rem;">SHOP INVENTORY</h1>
+    <p style="font-family:'Space Mono',monospace;font-size:0.8rem;color:#5a5a7a;margin-bottom:2rem;letter-spacing:0.08em;">INVENTORY & BILLING SYSTEM</p>
+    <input id="gateEmail" type="email" placeholder="your@email.com"
+      style="width:100%;padding:0.85rem 1rem;background:#141428;border:1px solid #2a2a44;border-radius:10px;color:#e8e8f0;font-family:'Space Mono',monospace;font-size:0.85rem;outline:none;margin-bottom:0.75rem;box-sizing:border-box;">
+    <button onclick="submitEmailGate()"
+      style="width:100%;padding:0.85rem;background:linear-gradient(135deg,#00ff88,#00d4ff);color:#04040a;border:none;border-radius:10px;font-family:'Space Mono',monospace;font-size:0.85rem;font-weight:700;cursor:pointer;letter-spacing:0.08em;">
+      INITIALIZE →
+    </button>
+    <p style="font-family:'Space Mono',monospace;font-size:0.72rem;color:#2a2a44;margin-top:1rem;">DATA STORED LOCALLY · NO SERVER</p>
+  </div>
+</div>
+
+<!-- ============================================================
+  PROFILE PICKER — multiple accounts
+  ============================================================ -->
+<div id="profileScreen" style="display:none;position:fixed;inset:0;z-index:9998;background:radial-gradient(ellipse at 50% 50%,#1a0a3a 0%,#04040a 70%);align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:#0f0f1e;border:1px solid rgba(0,255,136,0.3);border-radius:18px;padding:2rem;max-width:480px;width:100%;text-align:center;box-shadow:0 0 60px rgba(0,255,136,0.1);">
+    <h2 style="font-family:'Space Mono',monospace;color:#00ff88;margin-bottom:0.4rem;font-size:1rem;letter-spacing:0.1em;">SELECT PROFILE</h2>
+    <p style="font-family:'Space Mono',monospace;font-size:0.72rem;color:#5a5a7a;margin-bottom:1.5rem;letter-spacing:0.06em;">CHOOSE YOUR STORE ACCOUNT</p>
+    <div id="profileList" style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1.25rem;max-height:300px;overflow-y:auto;"></div>
+    <div id="addProfileForm" style="display:none;border-top:1px solid #2a2a44;padding-top:1rem;text-align:left;margin-bottom:1rem;">
+      <div style="display:flex;flex-direction:column;gap:0.6rem;">
+        <input id="newProfileEmail" type="email" placeholder="Email *" style="padding:0.75rem;background:#141428;border:1px solid #2a2a44;border-radius:8px;color:#e8e8f0;font-family:'Space Mono',monospace;font-size:0.8rem;outline:none;">
+        <input id="newProfileName"  type="text"  placeholder="Name (optional)" style="padding:0.75rem;background:#141428;border:1px solid #2a2a44;border-radius:8px;color:#e8e8f0;font-family:'Space Mono',monospace;font-size:0.8rem;outline:none;">
+        <input id="newProfileAvatar" type="text" placeholder="Avatar emoji (e.g. 🛒)" style="padding:0.75rem;background:#141428;border:1px solid #2a2a44;border-radius:8px;color:#e8e8f0;font-family:'Space Mono',monospace;font-size:0.8rem;outline:none;">
+        <button onclick="submitNewProfile()" style="padding:0.75rem;background:linear-gradient(135deg,#00ff88,#00d4ff);color:#04040a;border:none;border-radius:8px;font-family:'Space Mono',monospace;font-weight:700;cursor:pointer;font-size:0.8rem;">CREATE ACCOUNT</button>
+        <button onclick="document.getElementById('addProfileForm').style.display='none'" style="background:none;border:none;color:#5a5a7a;cursor:pointer;font-family:'Space Mono',monospace;font-size:0.75rem;padding:0.25rem;">CANCEL</button>
+      </div>
+    </div>
+    <button onclick="showAddProfileForm()" style="width:100%;padding:0.75rem;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);color:#00ff88;border-radius:10px;font-family:'Space Mono',monospace;font-size:0.8rem;cursor:pointer;letter-spacing:0.08em;">+ ADD NEW ACCOUNT</button>
+  </div>
+</div>
+
+<!-- ============================================================
+  HIDDEN PAGES — Products, Billing, Invoices, Low Stock, Colour Book, Settings
+  These slide over the dashboard when selected from the nav
+  ============================================================ -->
+<div id="mainApp" style="display:none;">
+
+<!-- PRODUCTS PAGE -->
+<div id="products" class="hidden-page" style="flex-direction:column;">
+  <div class="hp-topbar">
+    <span class="hp-title" id="pageTitle">INVENTORY</span>
+    <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+      <div style="position:relative;display:inline-flex;align-items:center;">
+        <input id="productSearch" type="text" placeholder="Search products, SKU…" style="padding:6px 36px 6px 12px;background:#141428;border:1px solid #2a2a44;border-radius:8px;color:#e8e8f0;font-family:'Space Mono',monospace;font-size:11px;outline:none;width:160px;">
+        <button id="cameraSearchBtn" onclick="app.openCameraSearch()" title="Search by camera / photo" type="button"
+          style="position:absolute;right:4px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:2px;display:flex;align-items:center;justify-content:center;color:#6c63ff;font-size:15px;line-height:1;transition:color 0.2s;"
+          onmouseover="this.style.color='#00ff88'" onmouseout="this.style.color='#6c63ff'">📷</button>
+      </div>
+      <!-- Price range slider toggle -->
+      <button id="priceFilterToggle" onclick="togglePriceSlider()" title="Filter by price range"
+        style="display:inline-flex;align-items:center;gap:5px;padding:6px 11px;background:#141428;border:1px solid #2a2a44;border-radius:8px;color:#8892b0;font-family:'Space Mono',monospace;font-size:11px;cursor:pointer;transition:all 0.2s;white-space:nowrap;"
+        onmouseover="this.style.borderColor='rgba(108,99,255,0.5)';this.style.color='#a78bfa'"
+        onmouseout="if(!window._priceSliderOpen){this.style.borderColor='#2a2a44';this.style.color='#8892b0'}">
+        ₹ PRICE
+      </button>
+      <button class="hp-btn-ghost btn-small" onclick="app.openCSVImportModal()" title="Bulk import from CSV">📂 CSV Import</button>
+      <button class="hp-btn-ghost btn-small" onclick="app._exportProductsCSV()" title="Export products to CSV">⬇️ CSV Export</button>
+      <button id="addProductBtn" class="hp-btn-neon" onclick="app.openProductModal()">+ ADD</button>
+      <button class="hp-btn-ghost" onclick="hideHiddenPage()">✕</button>
+    </div>
+  </div>
+  <!-- Price Range Slider Panel (hidden by default) -->
+  <div id="priceSliderPanel" style="display:none;padding:14px 20px 10px;background:#0f0f1e;border-bottom:1px solid rgba(108,99,255,0.2);position:relative;z-index:5;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <span style="font-family:'Space Mono',monospace;font-size:10px;color:#8892b0;letter-spacing:0.1em;">PRICE RANGE FILTER</span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span id="priceRangeLabel" style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:#a78bfa;letter-spacing:0.05em;">₹0 — ₹10000</span>
+        <button onclick="resetPriceSlider()" title="Reset filter"
+          style="background:rgba(168,85,247,0.12);border:1px solid rgba(168,85,247,0.3);border-radius:6px;color:#c084fc;font-family:'Space Mono',monospace;font-size:10px;padding:3px 8px;cursor:pointer;transition:background 0.2s;"
+          onmouseover="this.style.background='rgba(168,85,247,0.25)'" onmouseout="this.style.background='rgba(168,85,247,0.12)'">RESET</button>
+      </div>
+    </div>
+    <!-- Dual range slider container -->
+    <div class="price-slider-wrap">
+      <div class="price-slider-track">
+        <div id="priceSliderRange" class="price-slider-range"></div>
+      </div>
+      <input id="priceMin" type="range" class="price-slider-thumb price-slider-thumb-min"
+        min="0" max="10000" value="0" step="10" oninput="onPriceSliderInput()">
+      <input id="priceMax" type="range" class="price-slider-thumb price-slider-thumb-max"
+        min="0" max="10000" value="10000" step="10" oninput="onPriceSliderInput()">
+    </div>
+    <!-- Tick labels -->
+    <div style="display:flex;justify-content:space-between;margin-top:6px;">
+      <span style="font-family:'Space Mono',monospace;font-size:9px;color:#4a5568;">₹0</span>
+      <span style="font-family:'Space Mono',monospace;font-size:9px;color:#4a5568;">₹2500</span>
+      <span style="font-family:'Space Mono',monospace;font-size:9px;color:#4a5568;">₹5000</span>
+      <span style="font-family:'Space Mono',monospace;font-size:9px;color:#4a5568;">₹7500</span>
+      <span style="font-family:'Space Mono',monospace;font-size:9px;color:#4a5568;">₹10000</span>
+    </div>
+  </div>
+
+  <div id="productsScroll" style="flex:1;overflow-y:auto;min-height:0;">
+    <div id="productsList" class="products-grid" style="padding:20px;"></div>
+  </div>
+</div>
+
+<!-- BILLING PAGE -->
+<div id="billing" class="hidden-page">
+  <div class="hp-topbar">
+    <span class="hp-title">BILLING</span>
+    <button class="hp-btn-ghost" onclick="hideHiddenPage()">✕</button>
+  </div>
+  <div style="display:flex;gap:16px;padding:20px;height:calc(100% - 56px);overflow:hidden;">
+    <!-- Customer + product selection -->
+    <div id="billingFormSection" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;">
+      <div class="hp-card">
+        <div class="hp-card-label">CUSTOMER TYPE</div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <button id="typeCashBtn"       class="hp-type-btn active" onclick="app.setCustomerType('cash')">💵 CASH</button>
+          <button id="typeCreditBtn"     class="hp-type-btn"        onclick="app.setCustomerType('credit')">📋 CREDIT</button>
+          <button id="typeWholesalerBtn" class="hp-type-btn"        onclick="app.setCustomerType('wholesaler')">🏪 WHOLESALE</button>
+          <button id="typeSupplierBtn"   class="hp-type-btn"        onclick="app.setCustomerType('supplier')">📦 PURCHASE</button>
+        </div>
+        <input type="hidden" id="customerType" value="cash">
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <input id="customerName"  type="text" placeholder="Customer / Supplier name" class="hp-input">
+          <input id="customerPhone" type="tel"  placeholder="Phone (optional)"         class="hp-input">
+          <input id="invoiceDate"   type="date"                                        class="hp-input">
+        </div>
+      </div>
+      <div class="hp-card">
+        <div class="hp-card-label">ADD ITEM</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <select id="productSelect" class="hp-input">
+            <option value="">— Select product —</option>
+          </select>
+          <div style="display:flex;gap:8px;">
+            <input id="itemQuantity" type="number" min="1" value="1" placeholder="Qty" class="hp-input" style="width:80px;">
+            <input id="itemPrice"    type="number" min="0" step="0.01" placeholder="Price (auto)" class="hp-input" style="flex:1;">
+          </div>
+          <button id="addItemBtn" class="hp-btn-neon" onclick="app.addToCart()">+ ADD TO CART</button>
+        </div>
+      </div>
+    </div>
+    <!-- Cart -->
+    <div id="billingCartSection" style="width:320px;min-width:260px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;">
+      <div class="hp-card" style="flex:1;">
+        <div class="hp-card-label">CART</div>
+        <table style="width:100%;border-collapse:collapse;font-family:'Space Mono',monospace;font-size:11px;">
+          <tbody id="cartItems"></tbody>
+        </table>
+      </div>
+      <div class="hp-card">
+        <div class="hp-card-label" style="margin-bottom:8px;">BILLING OPTIONS</div>
+        <div style="display:flex;flex-direction:column;gap:8px;font-family:'Space Mono',monospace;font-size:11px;margin-bottom:12px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <label style="color:#5a5a7a;width:70px;">Discount %:</label>
+            <input id="discountPercent" type="number" min="0" max="100" step="0.01" value="0" placeholder="0" class="hp-input" style="width:80px;padding:6px;">
+            <span style="color:#5a5a7a;width:40px;">or</span>
+            <input id="discountAmount" type="number" min="0" step="0.01" value="0" placeholder="₹0" class="hp-input" style="width:80px;padding:6px;">
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <label style="color:#5a5a7a;width:70px;">GST %:</label>
+            <input id="gstRate" type="number" min="0" max="100" step="0.01" placeholder="0" class="hp-input" style="width:80px;padding:6px;">
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;border-top:1px solid #2a2a44;padding-top:10px;font-family:'Space Mono',monospace;font-size:10px;color:#5a5a7a;margin-bottom:12px;">
+          <div style="display:flex;justify-content:space-between;">
+            <span>Subtotal:</span>
+            <span id="subtotalAmount" style="color:#e8e8f0;">₹0.00</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <span>Discount:</span>
+            <span id="discountDisplayAmount" style="color:#ff4444;">−₹0.00</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <span>GST:</span>
+            <span id="gstDisplayAmount" style="color:#ffd700;">+₹0.00</span>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:12px;">
+          <span style="font-family:'Space Mono',monospace;font-size:11px;color:#5a5a7a;">TOTAL</span>
+          <span id="totalAmount" style="font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:#00ff88;">₹0.00</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <button id="generateInvoiceBtn" class="hp-btn-neon" onclick="app.generateInvoice()">🧾 GENERATE INVOICE</button>
+          <button id="newInvoiceBtn"      class="hp-btn-ghost" onclick="app.newInvoice()">↺ NEW INVOICE</button>
+          <button id="clearCartBtn"       class="hp-btn-ghost" style="color:#ff4444;" onclick="app.clearCart()">🗑 CLEAR CART</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- INVOICES PAGE -->
+<div id="invoices" class="hidden-page">
+  <div class="hp-topbar">
+    <span class="hp-title">INVOICES</span>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <input id="invoiceSearch" type="text" placeholder="Search invoices…" style="padding:6px 12px;background:#141428;border:1px solid #2a2a44;border-radius:8px;color:#e8e8f0;font-family:'Space Mono',monospace;font-size:11px;outline:none;width:200px;">
+      <button class="hp-btn-ghost" onclick="hideHiddenPage()">✕</button>
+    </div>
+  </div>
+  <div id="invoicesList" style="padding:20px;overflow-y:auto;height:calc(100% - 56px);"></div>
+</div>
+
+<!-- LOW STOCK PAGE -->
+<div id="lowstock" class="hidden-page">
+  <div class="hp-topbar">
+    <span class="hp-title">LOW STOCK</span>
+    <button class="hp-btn-ghost" onclick="hideHiddenPage()">✕</button>
+  </div>
+  <div style="padding:20px;overflow-y:auto;height:calc(100% - 56px);display:flex;flex-direction:column;gap:16px;">
+    <div class="hp-card" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <span style="font-family:'Space Mono',monospace;font-size:11px;color:#5a5a7a;">THRESHOLD:</span>
+      <input id="lowStockThreshold" type="number" min="1" value="10" class="hp-input" style="width:70px;">
+      <button id="saveThresholdBtn" class="hp-btn-neon btn-small" onclick="app.saveThreshold()">SAVE</button>
+      <span style="font-family:'Space Mono',monospace;font-size:11px;color:#5a5a7a;margin-left:12px;">SUPPLIER:</span>
+      <input id="supplierContact" type="text" placeholder="+91 number" class="hp-input" style="flex:1;min-width:150px;">
+      <input id="defaultReorderQty" type="number" min="1" value="50" class="hp-input" style="width:70px;" placeholder="Def qty">
+      <button id="saveReorderSettingsBtn" class="hp-btn-ghost btn-small">SAVE</button>
+      <button id="reorderAllBtn"          class="hp-btn-neon btn-small">📦 REORDER ALL</button>
+    </div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;">
+      <div class="hp-card" style="flex:1;text-align:center;">
+        <div style="font-family:'Space Mono',monospace;font-size:10px;color:#5a5a7a;margin-bottom:4px;">TOTAL LOW</div>
+        <div id="totalLowStockCount" style="font-family:'Space Mono',monospace;font-size:28px;font-weight:700;color:#ffd700;">0</div>
+      </div>
+      <div class="hp-card" style="flex:1;text-align:center;">
+        <div style="font-family:'Space Mono',monospace;font-size:10px;color:#5a5a7a;margin-bottom:4px;">CRITICAL (0)</div>
+        <div id="criticalCount" style="font-family:'Space Mono',monospace;font-size:28px;font-weight:700;color:#ff4444;">0</div>
+      </div>
+      <div class="hp-card" style="flex:1;text-align:center;">
+        <div style="font-family:'Space Mono',monospace;font-size:10px;color:#5a5a7a;margin-bottom:4px;">WARNING</div>
+        <div id="warningCount" style="font-family:'Space Mono',monospace;font-size:28px;font-weight:700;color:#ffd700;">0</div>
+      </div>
+    </div>
+    <div id="lowstockList"></div>
+  </div>
+</div>
+
+<!-- COLOUR BOOK PAGE -->
+<div id="colorbook" class="hidden-page">
+  <div class="hp-topbar">
+    <span class="hp-title">COLOUR BOOK</span>
+    <button class="hp-btn-ghost" onclick="hideHiddenPage()">✕</button>
+  </div>
+  <div id="colorBookContent" style="padding:20px;overflow-y:auto;height:calc(100% - 56px);"></div>
+</div>
+
+<!-- SUPPLIERS PAGE -->
+<div id="suppliers" class="hidden-page">
+  <div class="hp-topbar">
+    <span class="hp-title">🏭 SUPPLIERS</span>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="hp-btn-neon btn-small" onclick="app.openSupplierModal()">+ ADD SUPPLIER</button>
+      <button class="hp-btn-ghost" onclick="hideHiddenPage()">✕</button>
+    </div>
+  </div>
+  <div id="suppliersContent" style="padding:20px;overflow-y:auto;height:calc(100% - 56px);display:flex;flex-direction:column;gap:16px;"></div>
+</div>
+
+<!-- ADVANCE BOOKINGS PAGE -->
+<div id="bookings" class="hidden-page">
+  <div class="hp-topbar">
+    <span class="hp-title">📅 ADVANCE BOOKINGS</span>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="hp-btn-neon btn-small" onclick="app.openBookingModal()">+ NEW BOOKING</button>
+      <button class="hp-btn-ghost" onclick="hideHiddenPage()">✕</button>
+    </div>
+  </div>
+  <div id="bookingsContent" style="padding:20px;overflow-y:auto;height:calc(100% - 56px);display:flex;flex-direction:column;gap:16px;"></div>
+</div>
+
+<!-- NEW INVENTORY PAGE (Purchase Order Planner) -->
+<div id="newinventory" class="hidden-page">
+  <div class="hp-topbar">
+    <span class="hp-title">🛒 NEW INVENTORY</span>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="hp-btn-neon btn-small" onclick="app.openNewInventoryForm()">+ NEW PURCHASE ORDER</button>
+      <button class="hp-btn-ghost" onclick="hideHiddenPage()">✕</button>
+    </div>
+  </div>
+  <div id="newInventoryContent" style="padding:20px;overflow-y:auto;height:calc(100% - 56px);display:flex;flex-direction:column;gap:16px;"></div>
+</div>
+
+<!-- DESIGN CHART PAGE -->
+<div id="designchart" class="hidden-page">
+  <div class="hp-topbar">
+    <span class="hp-title">🎨 DESIGN CHART</span>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <select id="designChartFilter" class="hp-input" style="font-size:11px;padding:5px 8px;" onchange="app.loadDesignChart()">
+        <option value="all">All Products</option>
+      </select>
+      <button class="hp-btn-ghost btn-small" onclick="app.printDesignChart()" title="Print / Share chart">🖨 Print</button>
+      <button class="hp-btn-ghost" onclick="hideHiddenPage()">✕</button>
+    </div>
+  </div>
+  <div id="designChartContent" style="padding:20px;overflow-y:auto;height:calc(100% - 56px);"></div>
+</div>
+
+<!-- SETTINGS PAGE -->
+<div id="customerledger" class="hidden-page" style="flex-direction:column;">
+  <div class="hp-topbar">
+    <span class="hp-title">CUSTOMER LEDGER</span>
+    <div style="display:flex;gap:0.5rem;align-items:center;">
+      <button class="hp-btn-ghost" onclick="hideHiddenPage()">✕</button>
+    </div>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:20px;">
+    <!-- Stats Cards -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+      <div style="background:var(--surface);border:1px solid var(--faint);border-radius:12px;padding:16px;text-align:center;">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.1em;margin-bottom:8px;">TOTAL CUSTOMERS</div>
+        <div style="font-family:var(--mono);font-size:28px;font-weight:700;color:#00d4ff;" id="ledgerTotalCustomers">0</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--faint);border-radius:12px;padding:16px;text-align:center;">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.1em;margin-bottom:8px;">TOTAL DUE</div>
+        <div style="font-family:var(--mono);font-size:28px;font-weight:700;color:#ff4444;" id="ledgerTotalDue">₹0</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--faint);border-radius:12px;padding:16px;text-align:center;">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.1em;margin-bottom:8px;">WITH DUES</div>
+        <div style="font-family:var(--mono);font-size:28px;font-weight:700;color:#ff4444;" id="ledgerWithDues">0</div>
+      </div>
+    </div>
+
+    <!-- Add/Update Customer Form -->
+    <div style="background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.2);border-radius:12px;padding:18px;">
+      <div style="font-family:var(--mono);font-size:11px;color:#00d4ff;font-weight:700;letter-spacing:0.1em;margin-bottom:14px;">+ ADD / UPDATE CUSTOMER</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+        <input type="text" id="ledgerCustName" placeholder="Customer name *"
+          style="padding:10px 12px;background:var(--deep);border:1px solid var(--faint);border-radius:8px;color:var(--ink);font-family:var(--mono);font-size:12px;outline:none;box-sizing:border-box;">
+        <input type="tel" id="ledgerCustPhone" placeholder="Phone (WhatsApp)"
+          style="padding:10px 12px;background:var(--deep);border:1px solid var(--faint);border-radius:8px;color:var(--ink);font-family:var(--mono);font-size:12px;outline:none;box-sizing:border-box;">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+        <input type="number" id="ledgerCustBalance" placeholder="Opening balance (*)" min="0"
+          style="padding:10px 12px;background:var(--deep);border:1px solid var(--faint);border-radius:8px;color:var(--ink);font-family:var(--mono);font-size:12px;outline:none;box-sizing:border-box;">
+        <input type="text" id="ledgerCustCity" placeholder="City / Area"
+          style="padding:10px 12px;background:var(--deep);border:1px solid var(--faint);border-radius:8px;color:var(--ink);font-family:var(--mono);font-size:12px;outline:none;box-sizing:border-box;">
+      </div>
+      <button onclick="ledgerAddCustomer()" style="width:100%;padding:12px;background:transparent;border:1px solid #00d4ff;color:#00d4ff;border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;cursor:pointer;">Save Customer</button>
+    </div>
+
+    <!-- Customer List -->
+    <div id="ledgerCustomerList" style="display:flex;flex-direction:column;gap:8px;">
+      <div style="text-align:center;padding:40px 20px;color:var(--muted);font-family:var(--mono);font-size:12px;">No customers yet</div>
+    </div>
+  </div>
+</div>
+
+<div id="settings" class="hidden-page">
+  <div class="hp-topbar">
+    <span class="hp-title">SETTINGS</span>
+    <button class="hp-btn-ghost" onclick="hideHiddenPage()">✕</button>
+  </div>
+  <div style="padding:20px;overflow-y:auto;height:calc(100% - 56px);display:flex;flex-direction:column;gap:16px;">
+    <!-- Store Info -->
+    <div class="hp-card">
+      <div class="hp-card-label">STORE INFORMATION</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <input id="storeName"    type="text"  placeholder="Store name"    class="hp-input">
+        <input id="storeOwner"   type="text"  placeholder="Owner name"    class="hp-input">
+        <input id="storeEmail"   type="email" placeholder="Contact email" class="hp-input">
+        <input id="storePhone"   type="tel"   placeholder="Phone"         class="hp-input">
+        <textarea id="storeAddress" placeholder="Address" rows="2" class="hp-input" style="resize:vertical;"></textarea>
+        <input id="storeGSTIN"   type="text"  placeholder="GSTIN (e.g. 27AAPFU0939F1ZV)" class="hp-input" maxlength="15" style="text-transform:uppercase;">
+        <input id="storeState"   type="text"  placeholder="State (e.g. Gujarat)" class="hp-input">
+        <input id="storeStateCode" type="text" placeholder="State Code (e.g. 24)" class="hp-input" maxlength="2">
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input id="storeLogoUrl" type="text" placeholder="Logo URL (paste image link or leave blank)" class="hp-input" style="flex:1;">
+        </div>
+        <button id="saveStoreInfoBtn" class="hp-btn-neon btn-small">SAVE STORE INFO</button>
+      </div>
+    </div>
+    <!-- General -->
+    <div class="hp-card">
+      <div class="hp-card-label">GENERAL</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="hp-label">CURRENCY</span>
+          <select id="currency" class="hp-input" style="flex:1;">
+            <option value="₹">₹ INR</option><option value="$">$ USD</option><option value="€">€ EUR</option><option value="£">£ GBP</option>
+          </select>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="hp-label">TAX %</span>
+          <input id="taxRate" type="number" min="0" max="100" step="0.1" placeholder="0" class="hp-input" style="flex:1;">
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="hp-label">INV PREFIX</span>
+          <input id="invoicePrefix" type="text" placeholder="INV" class="hp-input" style="flex:1;">
+        </div>
+        <button id="saveGeneralBtn" class="hp-btn-neon btn-small">SAVE GENERAL</button>
+      </div>
+    </div>
+    <!-- Theme -->
+    <div class="hp-card">
+      <div class="hp-card-label">THEME</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <label style="display:flex;align-items:center;gap:6px;font-family:'Space Mono',monospace;font-size:11px;color:#e8e8f0;cursor:pointer;">
+          <input type="radio" name="appTheme" value="dark" checked> 🌙 DARK
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;font-family:'Space Mono',monospace;font-size:11px;color:#e8e8f0;cursor:pointer;">
+          <input type="radio" name="appTheme" value="light"> ☀️ LIGHT
+        </label>
+        <button id="saveThemeBtn" class="hp-btn-neon btn-small" onclick="app.applyThemeFromSettings()">APPLY</button>
+        <button id="themeToggle" class="hp-btn-ghost btn-small" onclick="app.toggleTheme()">TOGGLE</button>
+      </div>
+    </div>
+    <!-- Low Stock -->
+    <div class="hp-card">
+      <div class="hp-card-label">LOW STOCK THRESHOLD</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span class="hp-label">BELOW (UNITS)</span>
+        <input id="lowStockThresholdSetting" type="number" min="1" value="10" class="hp-input" style="width:80px;">
+        <button id="saveLowStockBtn" class="hp-btn-neon btn-small">SAVE</button>
+      </div>
+    </div>
+    <!-- Profiles -->
+    <div class="hp-card">
+      <div class="hp-card-label">ACCOUNTS</div>
+      <div id="profilesSettingsList" style="margin-bottom:10px;"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button id="switchProfileBtn"      class="hp-btn-ghost btn-small" onclick="showProfileScreen()">🔄 SWITCH</button>
+        <button id="addProfileSettingsBtn" class="hp-btn-neon btn-small"  onclick="app.openAddProfileModal()">+ ADD ACCOUNT</button>
+      </div>
+    </div>
+    <!-- Data -->
+    <div class="hp-card">
+      <div class="hp-card-label">DATA MANAGEMENT</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button id="exportDataBtn"  class="hp-btn-ghost btn-small" onclick="app.exportData()">↗ EXPORT</button>
+        <button id="backupDataBtn"  class="hp-btn-ghost btn-small" onclick="app.backupData()">💾 BACKUP</button>
+        <button id="clearAllBtn"    class="hp-btn-ghost btn-small" style="color:#ff4444;" onclick="app.clearAllData()">🗑 CLEAR ALL</button>
+        <button id="resetAppBtn"    class="hp-btn-ghost btn-small" style="color:#ffd700;" onclick="app.resetApp()">↺ RESET</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /#mainApp pages -->
+
+<!-- ============================================================
+  MODALS (all injected into body, shown via .active class)
+  ============================================================ -->
+
+<!-- Product Add/Edit Modal -->
+<div id="productModal" class="si-modal">
+  <div class="si-modal-box" style="max-width:560px;max-height:92vh;overflow-y:auto;">
+    <button class="si-modal-close close">×</button>
+    <h2 id="modalTitle" class="si-modal-title">ADD PRODUCT</h2>
+    <form id="productForm">
+      <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <button id="cameraBtn" type="button" class="hp-btn-ghost btn-small">📷 CAMERA</button>
+        <button id="uploadBtn" type="button" class="hp-btn-ghost btn-small">⬆ UPLOAD</button>
+      </div>
+      <input id="productPhoto" type="file" accept="image/*" capture="environment" style="display:none;">
+      <!-- Camera section -->
+      <div id="cameraModal" style="display:none;margin-bottom:12px;">
+        <video id="cameraFeed" autoplay playsinline style="width:100%;border-radius:10px;background:#000;max-height:200px;"></video>
+        <div style="display:flex;gap:6px;margin-top:6px;">
+          <button id="captureBtn"  type="button" class="hp-btn-neon btn-small" style="flex:1;">📸 CAPTURE</button>
+          <button id="retakeBtn"   type="button" class="hp-btn-ghost btn-small">↺</button>
+          <button id="closeCamera" type="button" class="hp-btn-ghost btn-small">✕</button>
+        </div>
+        <canvas id="photoCanvas" style="display:none;"></canvas>
+      </div>
+      <div id="photoPreview" style="margin-bottom:10px;"></div>
+      <!-- Video upload -->
+      <div style="display:flex;gap:8px;margin-bottom:6px;align-items:center;">
+        <button id="uploadVideoBtn" type="button" class="hp-btn-ghost btn-small">🎥 UPLOAD VIDEO</button>
+        <span id="videoFileName" style="font-family:'Space Mono',monospace;font-size:9px;color:#5a5a7a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px;"></span>
+        <button id="removeVideoBtn" type="button" style="display:none;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);border-radius:6px;color:#f87171;font-size:9px;padding:3px 8px;cursor:pointer;font-family:'Space Mono',monospace;">✕ REMOVE</button>
+      </div>
+      <input id="productVideo" type="file" accept="video/*" style="display:none;">
+      <div id="videoPreview" style="margin-bottom:10px;"></div>
+      <!-- Fields -->
+      <div class="si-field"><label>Product Name *</label><input id="productName" type="text" required placeholder="e.g. Cotton T-Shirt" class="hp-input"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="si-field"><label>SKU *</label><input id="productSKU" type="text" required placeholder="TSHIRT-001" class="hp-input"></div>
+        <div class="si-field"><label>Category</label><input id="productCategory" type="text" placeholder="Clothing" class="hp-input"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="si-field"><label>Retail Price *</label><input id="productPrice" type="number" required min="0" step="0.01" placeholder="0.00" class="hp-input"></div>
+        <div class="si-field"><label>Wholesale Price</label><input id="productWholesalePrice" type="number" min="0" step="0.01" placeholder="0.00" class="hp-input"></div>
+      </div>
+      <div class="si-field"><label>Total Stock *</label><input id="productQuantity" type="number" required min="0" placeholder="0" class="hp-input"></div>
+      <div class="si-field"><label>Description</label><textarea id="productDescription" rows="2" placeholder="Notes…" class="hp-input" style="resize:vertical;"></textarea></div>
+      <div class="si-field"><label>HSN Code <span style="font-size:10px;color:var(--text-muted);">(for GST invoice — e.g. 5208 for cotton fabric)</span></label><input id="productHSN" type="text" placeholder="e.g. 5208" class="hp-input" maxlength="8"></div>
+      <div class="si-field"><label>🏭 Supplier (optional)</label><select id="productSupplierId" class="hp-input"><option value="">— Link to supplier —</option></select></div>
+      <!-- Colours -->
+      <div class="si-field">
+        <label>🎨 COLOURS & STOCK</label>
+        <div style="display:flex;gap:6px;margin-bottom:6px;">
+          <input id="colorInput"    type="text"   placeholder="Colour name" class="hp-input" style="flex:2;">
+          <input id="colorQtyInput" type="number" placeholder="Qty" min="0" value="0" class="hp-input" style="width:60px;">
+          <button type="button" id="addColorBtn" class="hp-btn-ghost btn-small">ADD</button>
+          <button type="button" onclick="app.openColorChartPicker()" class="hp-btn-ghost btn-small" title="Colour chart">🎨</button>
+        </div>
+        <div id="colorTagsContainer"><span style="font-family:'Space Mono',monospace;font-size:11px;color:#5a5a7a;">No colours yet</span></div>
+      </div>
+      <button type="submit" class="hp-btn-neon" style="width:100%;margin-top:8px;">💾 SAVE PRODUCT</button>
+    </form>
+  </div>
+</div>
+
+<!-- Invoice Print Modal -->
+<div id="invoicePrintModal" class="si-modal">
+  <div class="si-modal-box" style="max-width:620px;max-height:92vh;overflow-y:auto;">
+    <button class="si-modal-close close">×</button>
+    <div id="invoicePrintContent"></div>
+    <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;">
+      <button id="printBtn"    class="hp-btn-neon">🖨 PRINT</button>
+      <button id="downloadBtn" class="hp-btn-ghost">↓ DOWNLOAD PDF</button>
+      <button id="waInvoiceBtn" class="hp-btn-ghost" style="background:rgba(37,211,102,0.12);border-color:rgba(37,211,102,0.4);color:#25D366;" onclick="if(window._currentInvoiceId)sendWhatsAppInvoice(window._currentInvoiceId)">📲 WhatsApp</button>
+    </div>
+  </div>
+</div>
+
+<!-- Quantity Selector Modal (for billing) -->
+<div id="quantitySelectorModal" class="si-modal">
+  <div class="si-modal-box" style="max-width:380px;">
+    <button class="si-modal-close close">×</button>
+    <h2 class="si-modal-title" id="quantityProductName" style="margin-bottom:4px;">Select Quantity</h2>
+    <div style="font-family:'Space Mono',monospace;font-size:11px;color:#5a5a7a;margin-bottom:14px;">
+      Price: <span id="quantityProductPrice">—</span> · Stock: <span id="quantityProductStock">—</span>
+    </div>
+    <!-- Simple (no colour) -->
+    <div id="quantitySimpleRow" class="si-field">
+      <label>QUANTITY</label>
+      <input id="quantityInput" type="number" min="1" value="1" class="hp-input">
+    </div>
+    <!-- Colour rows -->
+    <div id="quantityColorSection" style="display:none;">
+      <div id="colorQtyRows" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;"></div>
+      <div id="colorQtyValidation" style="font-family:'Space Mono',monospace;font-size:11px;margin-bottom:8px;"></div>
+    </div>
+    <button class="hp-btn-neon" style="width:100%;" onclick="app.confirmAddToBilling()">+ ADD TO CART</button>
+  </div>
+</div>
+
+<!-- ============================================================
+  GLOBAL STYLES for hidden pages & modals
+  ============================================================ -->
+<style>
+/* Hidden pages overlay the whole app */
+.hidden-page {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: #04040a;
+  flex-direction: column;
+  overflow: hidden;
+}
+.hidden-page.active { display: flex; }
+
+/* Hidden page topbar */
+.hp-topbar {
+  height: 56px;
+  background: #0a0a14;
+  border-bottom: 1px solid #2a2a44;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  flex-shrink: 0;
+}
+.hp-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: #00ff88;
+  letter-spacing: 0.12em;
+}
+.hp-card {
+  background: #0f0f1e;
+  border: 1px solid #2a2a44;
+  border-radius: 12px;
+  padding: 16px;
+}
+.hp-card-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  color: #5a5a7a;
+  letter-spacing: 0.15em;
+  margin-bottom: 10px;
+}
+.hp-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: #5a5a7a;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  min-width: 80px;
+}
+.hp-input {
+  padding: 8px 10px;
+  background: #141428;
+  border: 1px solid #2a2a44;
+  border-radius: 8px;
+  color: #e8e8f0;
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+.hp-input:focus { border-color: rgba(0,255,136,0.4); }
+.hp-btn-neon {
+  padding: 8px 16px;
+  background: rgba(0,255,136,0.1);
+  border: 1px solid rgba(0,255,136,0.3);
+  color: #00ff88;
+  border-radius: 8px;
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  cursor: pointer;
+  letter-spacing: 0.06em;
+  transition: all 0.2s;
+}
+.hp-btn-neon:hover { background: rgba(0,255,136,0.2); }
+.hp-btn-ghost {
+  padding: 8px 14px;
+  background: none;
+  border: 1px solid #2a2a44;
+  color: #5a5a7a;
+  border-radius: 8px;
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.hp-btn-ghost:hover { border-color: #5a5a7a; color: #e8e8f0; }
+.btn-small { padding: 5px 10px !important; font-size: 10px !important; }
+.hp-type-btn {
+  flex: 1;
+  padding: 7px;
+  background: #141428;
+  border: 1px solid #2a2a44;
+  color: #5a5a7a;
+  border-radius: 8px;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.hp-type-btn.active, .hp-type-btn.btn-primary {
+  background: rgba(0,255,136,0.1);
+  border-color: rgba(0,255,136,0.4);
+  color: #00ff88;
+}
+/* Modal styles (si- prefix = shop inventory) */
+.si-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(0,0,0,0.7);
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.si-modal.active { display: flex; }
+.si-modal-box {
+  background: #0f0f1e;
+  border: 1px solid #2a2a44;
+  border-radius: 16px;
+  padding: 24px;
+  position: relative;
+  width: 100%;
+  animation: siModalIn 0.25s ease;
+}
+@keyframes siModalIn { from{opacity:0;transform:translateY(16px) scale(0.97)} to{opacity:1;transform:none} }
+.si-modal-close {
+  position: absolute;
+  top: 14px; right: 16px;
+  background: none;
+  border: none;
+  color: #5a5a7a;
+  font-size: 20px;
+  cursor: pointer;
+  line-height: 1;
+}
+.si-modal-close:hover { color: #e8e8f0; }
+.si-modal-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: #00ff88;
+  letter-spacing: 0.08em;
+  margin-bottom: 18px;
+}
+.si-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+.si-field label { font-family: 'Space Mono', monospace; font-size: 10px; color: #5a5a7a; letter-spacing: 0.1em; }
+
+/* Notification */
+.notification {
+  position: fixed;
+  bottom: 24px; right: 24px;
+  z-index: 99999;
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  max-width: 300px;
+}
+.notification.success { background: #00ff88; color: #04040a; }
+.notification.error   { background: #ff4444; color: #fff; }
+.notification.warning { background: #ffd700; color: #04040a; }
+@keyframes slideInRight  { from{transform:translateX(120%);opacity:0} to{transform:none;opacity:1} }
+@keyframes slideOutRight { from{transform:none;opacity:1} to{transform:translateX(120%);opacity:0} }
+
+/* app.js expects .modal and .modal.active — bridge to si-modal */
+.modal        { display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;padding:16px; }
+.modal.active { display:flex; }
+.modal-content {
+  background: #0f0f1e;
+  border: 1px solid #2a2a44;
+  border-radius: 16px;
+  padding: 24px;
+  position: relative;
+  width: 100%;
+  animation: siModalIn 0.25s ease;
+}
+.close {
+  position: absolute;
+  top: 14px; right: 16px;
+  background: none;
+  border: none;
+  color: #5a5a7a;
+  font-size: 20px;
+  cursor: pointer;
+  line-height: 1;
+}
+.close:hover { color: #e8e8f0; }
+
+/* app.js btn helpers used inside dynamically generated HTML */
+.btn { display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:8px 14px;border:none;border-radius:8px;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s; }
+.btn-primary   { background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);color:#00ff88; }
+.btn-primary:hover { background:rgba(0,255,136,0.2); }
+.btn-secondary { background:#141428;border:1px solid #2a2a44;color:#5a5a7a; }
+.btn-secondary:hover { color:#e8e8f0;border-color:#5a5a7a; }
+.btn-danger    { background:rgba(255,68,68,0.1);border:1px solid rgba(255,68,68,0.3);color:#ff4444; }
+.btn-small     { padding:5px 10px!important;font-size:10px!important; }
+
+/* form-group used by app.js dynamic modals */
+.form-group { display:flex;flex-direction:column;gap:5px;margin-bottom:12px; }
+.form-group label { font-family:'Space Mono',monospace;font-size:10px;color:#5a5a7a;letter-spacing:0.1em; }
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding:8px 10px;background:#141428;border:1px solid #2a2a44;border-radius:8px;
+  color:#e8e8f0;font-family:'Space Mono',monospace;font-size:11px;outline:none;
+  width:100%;box-sizing:border-box;transition:border-color 0.2s;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus { border-color:rgba(0,255,136,0.4); }
+
+/* profile-card used by showProfileScreen() */
+.profile-card {
+  background: #0f0f1e;
+  border: 1px solid #2a2a44;
+  border-radius: 10px;
+  padding: 14px 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s;
+}
+.profile-card:hover { border-color: rgba(0,255,136,0.4); transform: translateY(-2px); }
+.profile-avatar { font-size: 1.8rem; margin-bottom: 6px; }
+.profile-name   { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; color: #e8e8f0; }
+.profile-email  { font-family: 'Space Mono', monospace; font-size: 10px; color: #5a5a7a; }
+
+/* card / bg vars used by app.js generated HTML */
+:root {
+  --bg-primary:   #04040a;
+  --bg-secondary: #141428;
+  --bg-card:      #0f0f1e;
+  --bg-card-hover:#1e1e38;
+  --border:       rgba(42,42,68,0.8);
+  --border-glow:  rgba(0,255,136,0.3);
+  --primary:      #00ff88;
+  --primary-hover:#00d4ff;
+  --primary-glow: rgba(0,255,136,0.15);
+  --text-light:   #e8e8f0;
+  --text-muted:   #5a5a7a;
+  --cyan:  #00d4ff;
+  --green: #00ff88;
+  --pink:  #ff4444;
+  --orange:#ffd700;
+  --purple:#a855f7;
+  --radius:12px;
+  --radius-sm:8px;
+}
+</style>
+
+<!-- ============================================================
+  SCRIPTS — storage first, then app logic
+  ============================================================ -->
+<!-- Camera Search Modal -->
+<div id="cameraSearchModal" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.85);align-items:center;justify-content:center;">
+  <div style="background:#0f0f1e;border:1px solid rgba(108,99,255,0.4);border-radius:18px;padding:20px;width:100%;max-width:420px;margin:16px;box-shadow:0 0 40px rgba(108,99,255,0.2);position:relative;">
+    <button onclick="app.closeCameraSearch()" style="position:absolute;top:12px;right:14px;background:none;border:none;color:#5a5a7a;font-size:20px;cursor:pointer;line-height:1;" onmouseover="this.style.color='#e8e8f0'" onmouseout="this.style.color='#5a5a7a'">×</button>
+    <div style="text-align:center;margin-bottom:14px;">
+      <div style="font-size:1.6rem;margin-bottom:4px;">📷</div>
+      <div style="font-family:'Space Mono',monospace;font-size:0.8rem;font-weight:700;color:#a78bfa;letter-spacing:0.1em;">CAMERA SEARCH</div>
+      <div style="font-family:'Space Mono',monospace;font-size:0.65rem;color:#5a5a7a;margin-top:3px;">Point at a product or take a photo to search</div>
+      <div style="margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;">
+        <span id="geminiKeyStatus" style="font-family:'Space Mono',monospace;font-size:0.6rem;color:#5a5a7a;"></span>
+        <button onclick="app.resetGeminiKey()" title="Change Gemini API Key"
+          style="background:none;border:1px solid #2a2a44;border-radius:6px;color:#5a5a7a;font-family:'Space Mono',monospace;font-size:0.6rem;padding:2px 8px;cursor:pointer;"
+          onmouseover="this.style.color='#a78bfa';this.style.borderColor='rgba(108,99,255,0.4)'"
+          onmouseout="this.style.color='#5a5a7a';this.style.borderColor='#2a2a44'">🔑 API KEY</button>
+      </div>
+    </div>
+
+    <!-- Live camera feed -->
+    <div id="cameraSearchFeedWrap" style="position:relative;border-radius:12px;overflow:hidden;background:#000;margin-bottom:10px;">
+      <video id="cameraSearchFeed" autoplay playsinline style="width:100%;display:block;max-height:240px;object-fit:cover;"></video>
+      <!-- Scan overlay -->
+      <div style="position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center;">
+        <div style="width:60%;height:60%;border:2px solid rgba(108,99,255,0.7);border-radius:10px;box-shadow:0 0 0 9999px rgba(0,0,0,0.35);">
+          <div style="position:absolute;top:0;left:0;width:18px;height:18px;border-top:3px solid #a78bfa;border-left:3px solid #a78bfa;border-radius:3px 0 0 0;"></div>
+          <div style="position:absolute;top:0;right:0;width:18px;height:18px;border-top:3px solid #a78bfa;border-right:3px solid #a78bfa;border-radius:0 3px 0 0;"></div>
+          <div style="position:absolute;bottom:0;left:0;width:18px;height:18px;border-bottom:3px solid #a78bfa;border-left:3px solid #a78bfa;border-radius:0 0 0 3px;"></div>
+          <div style="position:absolute;bottom:0;right:0;width:18px;height:18px;border-bottom:3px solid #a78bfa;border-right:3px solid #a78bfa;border-radius:0 0 3px 0;"></div>
+          <div id="cameraSearchScanLine" style="position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#a78bfa,transparent);animation:scanLine 2s ease-in-out infinite;top:0;"></div>
+        </div>
+      </div>
+      <canvas id="cameraSearchCanvas" style="display:none;"></canvas>
+    </div>
+
+    <!-- Preview after capture -->
+    <div id="cameraSearchPreview" style="display:none;margin-bottom:10px;border-radius:10px;overflow:hidden;">
+      <img id="cameraSearchPreviewImg" style="width:100%;max-height:180px;object-fit:contain;background:#0a0a18;">
+    </div>
+
+    <!-- AI status -->
+    <div id="cameraSearchStatus" style="display:none;font-family:'Space Mono',monospace;font-size:0.7rem;color:#a78bfa;text-align:center;padding:8px;background:rgba(108,99,255,0.08);border-radius:8px;margin-bottom:10px;"></div>
+
+    <!-- Action buttons -->
+    <div style="display:flex;gap:8px;">
+      <button id="cameraSearchCaptureBtn" onclick="app.captureCameraSearch()"
+        style="flex:1;padding:10px;background:linear-gradient(135deg,rgba(108,99,255,0.3),rgba(0,212,255,0.2));border:1px solid rgba(108,99,255,0.5);border-radius:10px;color:#a78bfa;font-family:'Space Mono',monospace;font-size:0.72rem;font-weight:700;cursor:pointer;letter-spacing:0.04em;transition:all 0.2s;"
+        onmouseover="this.style.background='linear-gradient(135deg,rgba(108,99,255,0.5),rgba(0,212,255,0.3))'"
+        onmouseout="this.style.background='linear-gradient(135deg,rgba(108,99,255,0.3),rgba(0,212,255,0.2))'">
+        📸 CAPTURE & SEARCH
+      </button>
+      <button id="cameraSearchUploadBtn" onclick="document.getElementById('cameraSearchFileInput').click()"
+        style="padding:10px 14px;background:rgba(42,42,68,0.8);border:1px solid #2a2a44;border-radius:10px;color:#8892b0;font-family:'Space Mono',monospace;font-size:0.72rem;cursor:pointer;transition:all 0.2s;"
+        onmouseover="this.style.color='#e8e8f0';this.style.borderColor='#5a5a7a'"
+        onmouseout="this.style.color='#8892b0';this.style.borderColor='#2a2a44'">
+        ⬆ UPLOAD
+      </button>
+    </div>
+    <input id="cameraSearchFileInput" type="file" accept="image/*" style="display:none;">
+
+    <!-- Retake btn (shown after capture) -->
+    <button id="cameraSearchRetakeBtn" onclick="app.retakeCameraSearch()" style="display:none;width:100%;margin-top:8px;padding:8px;background:none;border:1px solid #2a2a44;border-radius:10px;color:#5a5a7a;font-family:'Space Mono',monospace;font-size:0.7rem;cursor:pointer;"
+      onmouseover="this.style.color='#e8e8f0'" onmouseout="this.style.color='#5a5a7a'">
+      ↺ RETAKE
+    </button>
+  </div>
+</div>
+
+<style>
+@keyframes scanLine {
+  0%   { top: 0%; opacity: 1; }
+  50%  { top: calc(100% - 2px); opacity: 1; }
+  100% { top: 0%; opacity: 1; }
+}
+@keyframes csPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(108,99,255,0.5); }
+  50%      { box-shadow: 0 0 0 8px rgba(108,99,255,0); }
+}
+#cameraSearchModal.active { display:flex !important; }
+
+/* ── PRICE RANGE SLIDER ── */
+.price-slider-wrap {
+  position: relative;
+  height: 28px;
+  margin: 4px 0;
+}
+.price-slider-track {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0; right: 0;
+  height: 5px;
+  background: rgba(42,42,68,0.9);
+  border-radius: 3px;
+}
+.price-slider-range {
+  position: absolute;
+  height: 100%;
+  background: linear-gradient(90deg, #6c63ff, #a78bfa);
+  border-radius: 3px;
+  box-shadow: 0 0 8px rgba(108,99,255,0.4);
+}
+.price-slider-thumb {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 100%;
+  height: 100%;
+  background: none;
+  border: none;
+  outline: none;
+  pointer-events: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.price-slider-thumb::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #a78bfa;
+  border: 2px solid #0f0f1e;
+  box-shadow: 0 0 0 2px rgba(108,99,255,0.5), 0 0 10px rgba(108,99,255,0.4);
+  cursor: pointer;
+  pointer-events: all;
+  transition: box-shadow 0.2s, background 0.2s;
+}
+.price-slider-thumb::-webkit-slider-thumb:hover {
+  background: #c084fc;
+  box-shadow: 0 0 0 3px rgba(168,85,247,0.6), 0 0 14px rgba(168,85,247,0.5);
+}
+.price-slider-thumb::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #a78bfa;
+  border: 2px solid #0f0f1e;
+  box-shadow: 0 0 0 2px rgba(108,99,255,0.5), 0 0 10px rgba(108,99,255,0.4);
+  cursor: pointer;
+  pointer-events: all;
+}
+.price-slider-thumb-min { z-index: 3; }
+.price-slider-thumb-max { z-index: 4; }
+
+
+/* ── PRINT STYLES — GST Invoice ── */
+@media print {
+    body > *:not(#invoicePrintModal) { display: none !important; }
+    #invoicePrintModal {
+        position: fixed !important;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: #fff !important;
+        display: block !important;
+        overflow: visible !important;
+        z-index: 999999;
+    }
+    .si-modal-box {
+        box-shadow: none !important;
+        border: none !important;
+        max-width: 100% !important;
+        max-height: none !important;
+        overflow: visible !important;
+        background: #fff !important;
+        padding: 0 !important;
+    }
+    .si-modal-close, #printBtn, #downloadBtn, #waInvoiceBtn,
+    [style*="display:flex;gap:10px;margin-top"] { display: none !important; }
+    #gstInvoice {
+        border: none !important;
+        max-width: 100% !important;
+        color: #000 !important;
+    }
+    @page { margin: 10mm; size: A4; }
+}
+</style>
+
+<script src="storage.js?v=2026-05-20"></script>
+<script src="utils.js?v=2026-05-20"></script>
+<script src="profile.js?v=2026-05-20"></script>
+
+<!-- Feature Modules -->
+<script src="modules/dashboard.js?v=2026-05-20"></script>
+<script src="modules/products.js?v=2026-05-20"></script>
+<script src="modules/invoices.js?v=2026-05-20"></script>
+<script src="modules/analytics.js?v=2026-05-20"></script>
+<script src="modules/color-book.js?v=2026-05-20"></script>
+<script src="modules/suppliers.js?v=2026-05-20"></script>
+<script src="modules/bookings.js?v=2026-05-20"></script>
+<script src="modules/meter-billing.js?v=2026-05-20"></script>
+<script src="modules/backup.js?v=2026-05-20"></script>
+
+<!-- Core Modules -->
+<script src="customer-ledger.js?v=2026-05-20"></script>
+<script src="modules/module-loader.js?v=2026-05-20"></script>
+
+<!-- Main Application -->
+<script src="js/payment-mode.js?v=2026-05-20"></script>
+<script src="features.js?v=2026-05-20"></script>
+<script src="app.js?v=2026-05-20"></script>
+<script>
+// Bridge: app.js calls changePage() which sets .active on page elements.
+// We intercept to show/hide our hidden-page overlay style instead.
+const _origChangePage = ShopApp.prototype.changePage;
+ShopApp.prototype.changePage = function(pageName) {
+  // Hide all hidden pages
+  document.querySelectorAll('.hidden-page').forEach(p => p.classList.remove('active'));
+  // Update nav rail active state
+  document.querySelectorAll('.nav-icon[data-page]').forEach(n => {
+    n.classList.toggle('active', n.dataset.page === pageName);
+  });
+  if (pageName === 'dashboard') {
+    // Just update the dashboard in-place
+    this.updateDashboard();
+  } else {
+    const page = document.getElementById(pageName);
+    if (page) page.classList.add('active');
+    // Trigger the correct load function
+    if (pageName === 'products')   this.loadProducts();
+    else if (pageName === 'billing')  { this.updateProductSelect(); this.switchBillingTab('customer'); }
+    else if (pageName === 'lowstock') this.loadLowStockPage();
+    else if (pageName === 'settings') this.loadSettings();
+    else if (pageName === 'invoices') this.loadInvoices();
+    else if (pageName === 'colorbook') this.loadColorBook();
+    else if (pageName === 'suppliers')  this.loadSuppliersPage();
+    else if (pageName === 'bookings')   this.loadBookingsPage();
+    else if (pageName === 'newinventory') this.loadNewInventoryPage();
+    else if (pageName === 'designchart')  this.loadDesignChart();
+  }
+};
+
+function hideHiddenPage() {
+  document.querySelectorAll('.hidden-page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-icon[data-page]').forEach(n => {
+    n.classList.toggle('active', n.dataset.page === 'dashboard');
+  });
+}
+
+// Wire topbar search — stays on dashboard, shows overlay results, does NOT redirect
+const topbarSearch = document.querySelector('.search-wrap input');
+if (topbarSearch) {
+  topbarSearch.addEventListener('input', function(e) {
+    if (window.app) app.dashboardSearch(e.target.value);
+  });
+  topbarSearch.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && e.target.value.trim()) {
+      if (window.app) { app.changePage('products'); const ps = document.getElementById('productSearch'); if (ps) { ps.value = e.target.value; app.searchProducts(e.target.value); } }
+    }
+    if (e.key === 'Escape') { e.target.value = ''; if (window.app) app.dashboardSearch(''); }
+  });
+}
+
+// ── PRICE RANGE SLIDER ──────────────────────────────────────────────────
+window._priceSliderOpen = false;
+
+function togglePriceSlider() {
+  const panel = document.getElementById('priceSliderPanel');
+  const btn   = document.getElementById('priceFilterToggle');
+  window._priceSliderOpen = !window._priceSliderOpen;
+  panel.style.display = window._priceSliderOpen ? 'block' : 'none';
+  if (window._priceSliderOpen) {
+    autoSetSliderMax();          // set max from real product prices
+    btn.style.borderColor = 'rgba(108,99,255,0.6)';
+    btn.style.color       = '#a78bfa';
+    btn.style.background  = 'rgba(108,99,255,0.12)';
+    updatePriceSliderUI();
+  } else {
+    btn.style.borderColor = '#2a2a44';
+    btn.style.color       = '#8892b0';
+    btn.style.background  = '#141428';
+    resetPriceSlider();
+  }
+}
+
+function autoSetSliderMax() {
+  if (!window.storage) return;
+  const products = storage.getProducts();
+  if (!products.length) return;
+  // Round up to nearest 500
+  const highest  = Math.max(...products.map(p => p.price || 0));
+  const maxPrice = Math.ceil(highest / 500) * 500 || 10000;
+  const minEl = document.getElementById('priceMin');
+  const maxEl = document.getElementById('priceMax');
+  minEl.max = maxPrice;
+  maxEl.max = maxPrice;
+  minEl.value = 0;
+  maxEl.value = maxPrice;   // always start fully open
+  // Update tick labels
+  const ticks = document.querySelectorAll('#priceSliderPanel > div:last-child span');
+  if (ticks.length === 5) {
+    ticks[0].textContent = '₹0';
+    ticks[1].textContent = '₹' + Math.round(maxPrice * 0.25).toLocaleString('en-IN');
+    ticks[2].textContent = '₹' + Math.round(maxPrice * 0.5 ).toLocaleString('en-IN');
+    ticks[3].textContent = '₹' + Math.round(maxPrice * 0.75).toLocaleString('en-IN');
+    ticks[4].textContent = '₹' + maxPrice.toLocaleString('en-IN');
+  }
+}
+
+function onPriceSliderInput() {
+  const minEl   = document.getElementById('priceMin');
+  const maxEl   = document.getElementById('priceMax');
+  let minVal    = parseInt(minEl.value);
+  let maxVal    = parseInt(maxEl.value);
+  const sliderMax = parseInt(minEl.max) || 10000;
+  const gap     = parseInt(minEl.step) * 2;
+  // Prevent handles from crossing
+  if (maxVal - minVal < gap) {
+    if (document.activeElement === minEl) { minEl.value = maxVal - gap; minVal = maxVal - gap; }
+    else                                  { maxEl.value = minVal + gap; maxVal = minVal + gap; }
+  }
+  updatePriceSliderUI(minVal, maxVal);
+  // When max handle is at the rightmost end → no upper limit (show ALL products above minVal)
+  const effectiveMax = maxVal >= sliderMax ? '' : maxVal;
+  if (window.app) app.searchProductsByPriceRange(minVal === 0 ? '' : minVal, effectiveMax);
+}
+
+function updatePriceSliderUI(minVal, maxVal) {
+  const minEl     = document.getElementById('priceMin');
+  const maxEl     = document.getElementById('priceMax');
+  const rangeEl   = document.getElementById('priceSliderRange');
+  const labelEl   = document.getElementById('priceRangeLabel');
+  const sliderMax = parseInt(minEl.max) || 10000;
+  minVal = minVal !== undefined ? minVal : parseInt(minEl.value);
+  maxVal = maxVal !== undefined ? maxVal : parseInt(maxEl.value);
+  const leftPct  = (minVal / sliderMax) * 100;
+  const rightPct = (maxVal / sliderMax) * 100;
+  rangeEl.style.left  = leftPct  + '%';
+  rangeEl.style.width = (rightPct - leftPct) + '%';
+  const fmt       = v => '₹' + v.toLocaleString('en-IN');
+  const isDefault = minVal === 0 && maxVal >= sliderMax;
+  labelEl.textContent = isDefault ? 'ALL PRICES' : fmt(minVal) + ' — ' + fmt(maxVal);
+  labelEl.style.color = isDefault ? '#5a5a7a' : '#a78bfa';
+}
+
+function resetPriceSlider() {
+  const minEl = document.getElementById('priceMin');
+  const maxEl = document.getElementById('priceMax');
+  minEl.value = 0;
+  maxEl.value = parseInt(maxEl.max) || 10000;
+  updatePriceSliderUI();
+  if (window.app) app.loadProducts();   // show ALL products
+}
+// ────────────────────────────────────────────────────────────────────────────
+
+(function() {
+  const d = new Date();
+  const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  const el = document.querySelector('.date-tag');
+  if (el) el.textContent = days[d.getDay()] + ' ' + String(d.getDate()).padStart(2,'0') + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+})();
+</script>
+
+</body>
+</html>

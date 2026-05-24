@@ -1,0 +1,27 @@
+{
+  "name": "Shop Inventory - Inventory & Billing",
+  "short_name": "Shop Inventory",
+  "description": "Complete inventory management and billing system for your shop",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0d0d1a",
+  "theme_color": "#6c63ff",
+  "icons": [],
+  "categories": ["business", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Inventory",
+      "short_name": "Inventory",
+      "description": "Manage your products",
+      "url": "./index.html?page=products"
+    },
+    {
+      "name": "Billing",
+      "short_name": "Billing",
+      "description": "Create invoices",
+      "url": "./index.html?page=billing"
+    }
+  ]
+}
